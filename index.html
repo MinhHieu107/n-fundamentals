@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login Options</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      text-align: center;
+      width: 300px;
+      animation: fadeIn 0.6s ease;
+    }
+    h1 {
+      font-size: 24px;
+      color: #444;
+      margin-bottom: 20px;
+    }
+    button {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: all 0.3s ease;
+    }
+    button:first-of-type {
+      background-color: #2575fc;
+      color: #fff;
+    }
+    button:first-of-type:hover {
+      background-color: #1a5ed1;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37,117,252,0.4);
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #ddd;
+      margin: 24px 0;
+    }
+    button:last-of-type {
+      background-color: #db4437;
+      color: #fff;
+    }
+    button:last-of-type:hover {
+      background-color: #b23327;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(219,68,55,0.4);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9);}
+      to { opacity: 1; transform: scale(1);}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Login</h1>
+
+    <!-- Nút login bằng username/password -->
+    <button id="loginUsernameBtn">Login with Username</button>
+
+    <hr>
+
+    <!-- Login bằng Google -->
+    <button id="loginGoogleBtn">Login with Google</button>
+  </div>
+
+  <script>
+    const loginUsernameBtn = document.getElementById('loginUsernameBtn');
+    loginUsernameBtn.addEventListener('click', () => {
+      window.location.href = 'http://localhost:3000/oauth/redirect-to-login';
+    });
+
+    const loginGoogleBtn = document.getElementById('loginGoogleBtn');
+    loginGoogleBtn.addEventListener('click', () => {
+      window.location.href = 'http://localhost:3000/auth/google/callback';
+    });
+
+    window.onload = () => {
+      const params = new URLSearchParams(window.location.search);
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+
+      if (accessToken) {
+        console.log('Access Token:', accessToken);
+        console.log('Refresh Token:', refreshToken);
+        alert('Login thành công! Check console để xem token.');
+      }
+    };
+  </script>
+</body>
+</html>

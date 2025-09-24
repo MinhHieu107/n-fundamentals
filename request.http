@@ -1,0 +1,101 @@
+GET http://localhost:3000/songs
+
+###
+POST http://localhost:3000/songs
+Content-Type: application/json
+
+{
+    "title" : "lasting forever",
+    "artists": ["sigla",
+    "john"],
+    "releaseDate" : "2022-09-29",
+    "duration": "02:34",
+    "lyrics": "I love you love you baby oh love you love you baby oh"
+}
+
+
+###
+GET   http://localhost:3000/songs/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1pIiwic3ViIjoxLCJpYXQiOjE3NTU2OTM3MzksImV4cCI6MjAwMDAwMDAwMH0.yJtk5DiWxPc2txFonYt7qxuobkjIeYt6KBfHKiyxVH4
+###
+DELETE http://localhost:3000/songs/1
+###
+POST  http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "username": "meo",
+  "password": "123456"
+}
+###
+POST  http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "username": "mi",
+  "password": "1234567"
+}
+
+###
+GET  http://localhost:3000/auth/profile
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1pIiwic3ViIjoxLCJpYXQiOjE3NTgyMTAxOTcsImV4cCI6MTc1ODIxNzM5N30.3O-POwDYuzVWyox-l8ALmUPIlpQpqMdgiQrVMwr_bPM
+###
+POST http://localhost:3000/auth/refresh
+Authorization: Bearer 
+Content-Type: application/json
+
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1pIiwic3ViIjoxNzU1Njg0ODY1MjI3LCJpYXQiOjE3NTU2ODQ4NjYsImV4cCI6MTc1NjI4OTY2Nn0.Kix2-nfBQqSp3tE8cmXyqwyWmSOC6QH0Xcj6Pc1Ykhc"
+}
+###
+POST http://localhost:3000/auth/forgot-password
+Content-Type: application/json
+
+{
+   "username": "mi"
+}
+
+###
+POST http://localhost:3000/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImlhdCI6MTc1NTcwMzYxNiwiZXhwIjoxNzU1NzA0NTE2fQ.2lISB9fXaUfqOyG69EQ06Nw_G0p6LOYT4e_hSit7tj4",
+  "newPassword": "1234567"
+}
+###
+
+
+
+
+POST http://localhost:3000/oauth/token
+Content-Type: application/json
+
+{
+  "code": "ba78c12d-0d9e-457a-942e-c2e9d8237dff",
+  "client_id": "client_123",
+  "client_secret": "secret_abc",
+  "redirect_uri": "http://localhost:4000/callback"
+}
+###
+GET http://localhost:3000/oauth/userinfo?access_token=00ace9e3-ad79-468b-b290-580975c67925
+###
+POST /oauth/login
+Content-Type: application/json
+
+{
+  "grant_type": "password",
+  "client_id": "client_123",
+  "client_secret": "secret_abc",
+  "redirect_uri": "http://localhost:3000/callback",
+  "username": "mi",
+  "password": "1234567"
+}
+
+
+
+
+
+
+
