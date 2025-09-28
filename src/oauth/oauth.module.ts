@@ -8,13 +8,14 @@ import { User } from '../auth/user.entity';
 import { OAuthClientService } from './oauth.service';
 import { AuthService } from 'src/auth/auth.service';
 import { AuthModule } from 'src/auth/auth.module';
+import { RedisService } from './redis.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, OAuthClient]),
   AuthModule],
   controllers: [OauthController, CallbackController],
-  providers: [OAuthClientService],
-  exports: [OAuthClientService],
+  providers: [OAuthClientService, RedisService],
+  exports: [OAuthClientService, RedisService],
 })
 export class OauthModule {}

@@ -1,0 +1,101 @@
+--- a/src/app.module.ts
++++ b/src/app.module.ts
+@@
+   useFactory: (config: ConfigService) => ({
+     type: 'postgres',
+     host: config.get<string>('DB_HOST'),
+     port: config.get<number>('DB_PORT'),
+     username: config.get<string>('DB_USER'),
+     password: config.get<string>('DB_PASS'),
+     database: config.get<string>('DB_NAME'),
+     entities: [Song, Author, User, OAuthClient],
+-    synchronize: true,
++    synchronize: config.get<boolean>('DB_SYNC'),
++    // AWNSER: Synchronize có lúc nguy hiểm, do có thể làm mất data nếu các entities thay đổi các column
++    // Trong môi trường production thì nên luôn luôn để syn là false, và dùng migration để nhất quán database nếu có thay đổi
+   }),
+ }),
+ 
+   providers: [
+     {
+       provide: `CONFIG`,
+-      useFactory: () => devConfig,
++      //Đây là đăng kí 1 custome provider mới, dùng để trả về object config tuỳ theo mình đăng kí
++      //Dependency Injection là 1 design pattern dùng để tạo và delivering 1 số phần của app cho các phần khác cần 
++      //Khi nào mình cần đến cái class này thì thay vì tạo new class mới thì chỉ cần khai báo trong constructor để lấy dữ liệu
++      // Example constructor(private catsService: CatsService) {}
++      useFactory: () =>{
++          return process.env.NODE_ENV === `development` ? devConfig: proConfig;
++      }
+     },
+   ],
+ })
+--- a/src/auth/user.entity.ts
++++ b/src/auth/user.entity.ts
+@@
+   @Column({ unique: true })
+   username: string;
+
+-  @Column()
+-  password: string;
++  //Hash & salt password trong service xử lí từ lúc người dùng tạo tài khoản. Salt ở đây đang là mức 10
++  // Việc lưu raw password sẽ dẫn đến vấn đề về bảo mật, nếu như là raw password thì nghĩa là người cầm data sẽ xem được toàn bộ
++  // Và nếu mất data nghĩa là tất cả ttin của user cũng sẽ đi theo, vì thế khi pass được lưu sẽ hash sau đó lúc ktra sẽ check xem có hợp lệ k 
++  @Column()
++  password: string;
+--- a/src/oauth/oauth.controller.ts
++++ b/src/oauth/oauth.controller.ts
+@@
+   @Post('login')
+   async handleLogin(
+     @Body('username') username: string,
+     @Body('password') password: string,
+     @Body('client_id') clientId: string,
+     @Body('redirect_uri') redirectUri: string,
+     @Body('state') state: string,
+     @Res() res: Response,
+   ) {
+     const client = await this.oauthClientService.findByClientId(clientId);
+     if (!client || client.redirectUri !== redirectUri) {
+       return res.status(400).send('Invalid client or redirect_uri');
+     }
+ 
+     const user = await this.authService.validateUser(username, password);
+     if (!user) return res.status(401).send('Invalid credentials');
+ 
+-    this.pendingConsents[user.id] = { clientId, redirectUri, state };
++    // Khi restart lại thì app có mất cái state, data hiện tại, nếu như code cũ khi restart app rồi f5 trên front thì sẽ báo no pending ngay
++    // Do nếu chỉ dùng Map hoặc object thường thì data chỉ nằm trong RAM của node process, nên nếu reset thì ram sẽ reset theo -> mất data
++    //Có 1 số phương pháp thường dùng như có thể lưu vào bảng trong database, lưu các ttin quan trọng tại cái phase đó
++    // Có thể dùng redis để lưu data trong redis server để tách với nodejs
++    // Session store nếu chỉ cần gắn với phiên người dùng
++    await this.redisService.set(
++      `oauth:consent:${user.id}`,
++      JSON.stringify({ clientId, redirectUri, state }),
++      300, // TTL 5 phút
++    );
+--- a/src/oauth/oauth-client.service.ts
++++ b/src/oauth/oauth-client.service.ts
+@@
+   constructor(
+     @InjectRepository(User)
+     private userRepo: Repository<User>,
+     @InjectRepository(OAuthClient)
+     private readonly clientRepo: Repository<OAuthClient>,
+   ) {}
+-  // ...
++  // E không hiểu ý lắm, ví dụ ở đây e hiểu mình là oauth mình là bên thứ 3, mình đang có 1 cái App chẳng hạn và mình muốn cho user đăng nhập bằng oauth của mình
++  //Thì cái app này phải đăng kí với Oauth là mình để cho mình biết là nó hợp lệ, sau này đăng nhập cái app đó thì có thể qa oauth của mình, thì e đang hình dung nó như v
+async createClient(data: {
+    clientId: string;
+    clientSecret: string;
+    redirectUri: string;
+    name: string;
+    scopes?: string[];
+  }): Promise<OAuthClient> {
+    const client = this.clientRepo.create({
+      ...data,
+      scopes: data.scopes || [],
+    });
+    return this.clientRepo.save(client);
+  }

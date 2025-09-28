@@ -13,7 +13,9 @@ export class OAuthClientService {
     @InjectRepository(OAuthClient)
     private readonly clientRepo: Repository<OAuthClient>,
   ) {}
-
+  // E không hiểu ý lắm, ví dụ ở đây e hiểu mình là oauth mình là bên thứ 3, mình đang có 1 cái APp chẳng hạn và mình muốn cho user đăng nhập bằng oauth của mình
+  //Thì cái app này phải đăng kí với Oauth là mình để cho mình biết là nó hợp lệ, sau này đăng nhập cái app đó thì có thể qa oauth của mình, thì e đang hình dung nó như v
+  
   /** Tạo client mới */
   async createClient(data: {
     clientId: string;

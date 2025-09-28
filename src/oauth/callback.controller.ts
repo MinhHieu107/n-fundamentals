@@ -1,26 +1,24 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
+import { Controller, Get, Query, Res, UsePipes, ValidationPipe } from '@nestjs/common';
 import type { Response } from 'express';
 import axios from 'axios';
-import jwt from 'jsonwebtoken';
+import { CallbackQueryDto } from './dto/callback.dto';
+
+
 @Controller()
 export class CallbackController {
   @Get('callback')
+  @UsePipes(new ValidationPipe({ transform: true })) 
   async callback(
-    @Query('code') code: string,
-    @Query('state') state: string,
+    @Query() query: CallbackQueryDto,
     @Res() res: Response,
   ) {
-    if (!code) {
-      return res.status(400).send('Missing code');
-    }
     try {
-     
       const tokenRes = await axios.post('http://localhost:3000/oauth/token', {
         grant_type: 'authorization_code',
-        code,
+        code: query.code,
         client_id: 'client_123',
         client_secret: 'secret_abc',
-        redirect_uri: 'http://localhost:3000/callback', 
+        redirect_uri: 'http://localhost:3000/callback',
       });
 
       const accessToken = tokenRes.data.access_token;
@@ -32,7 +30,7 @@ export class CallbackController {
 
       const redirectUrl =
         `http://localhost:5500/index.html?access_token=${accessToken}` +
-        `&refresh_token=${refreshToken}&state=${state}`;
+        `&refresh_token=${refreshToken}&state=${query.state}`;
 
       return res.redirect(307, redirectUrl);
     } catch (err) {

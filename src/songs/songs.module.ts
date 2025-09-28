@@ -13,10 +13,7 @@ import { AuthorService } from './author.service';
   imports: [TypeOrmModule.forFeature([Song, Author])],
   controllers: [SongsController, AuthorController],
   providers: [SongsService, AuthorService,
- // {
- //   provide:SongsService,
- //   useClass: SongsService,
- //  }
+ 
  {
   provide: 'CONNECTION',  
   useValue: connection,

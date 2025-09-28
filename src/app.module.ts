@@ -43,16 +43,23 @@ const proConfig = {port: 4000}
         limit: config.get('THROTTLE_LIMIT', 2),
       }],
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      database: 'spotify-clone',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password:'12345678',
-      entities: [Song, Author, User, OAuthClient],
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+  imports: [ConfigModule],
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => ({
+    type: 'postgres',
+    host: config.get<string>('DB_HOST'),
+    port: config.get<number>('DB_PORT'),
+    username: config.get<string>('DB_USER'),
+    password: config.get<string>('DB_PASS'),
+    database: config.get<string>('DB_NAME'),
+    entities: [Song, Author, User, OAuthClient],
+    synchronize: config.get<boolean>('DB_SYNC'),
+    // AWNSER: Synchronize có lúc nguy hiểm, do có thể làm mất data nếu các entities thay đổi các column
+    // Trong môi trường production thì nên luôn luôn để syn là false, và dùng migration để nhất quán database nếu có thay đổi
+  }),
 }),
+
     SongsModule,
     AuthModule,
     OauthModule,
@@ -70,6 +77,10 @@ const proConfig = {port: 4000}
     
     {
       provide: `CONFIG`,
+      //Đây là đăng kí 1 custome provider mới, dùng để trả về object config tùy theo mình đăng kí
+      //Dependency Injection là 1 design pattern dùng để tạo và delivering 1 số phần của app cho các phần khác cần 
+      //Khi nào mình cần đến cái class này thì thay vì tạo new class mới thì chỉ cần khai báo trong constructor để lấy dữ liệu
+      // Example constructor(private catsService: CatsService) {}
       useFactory: () =>{
           return process.env.NODE_ENV === `development` ? devConfig: proConfig;
       }
